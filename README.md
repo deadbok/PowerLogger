@@ -1,0 +1,1 @@
+Power logger using an MSP430G2553.
