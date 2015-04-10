@@ -1,2 +1,7 @@
 Debug
 Release
+powerlogger.*
+.dep
+*.geany
+*.o
+*.lst
