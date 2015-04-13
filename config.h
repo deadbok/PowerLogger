@@ -28,4 +28,13 @@
 //Baud rate of the UART
 #define BAUD    9600
 
+//#define DEBUG
+
+#ifdef DEBUG
+#include <stdio.h>
+#define debug(...)     printf(__VA_ARGS__)
+#else
+#define debug(...)
+#endif
+
 #endif

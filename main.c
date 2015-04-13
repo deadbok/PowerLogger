@@ -31,12 +31,10 @@
  * 
  */
 #include <stdio.h>
+#include <avr/io.h>
 #include <util/delay.h>
 #include "uart.h"
 #include "adc.h"
-
-//Variable to store integers as strings
-char	tmp_intstr[10];
 
 /*
  * main.c
@@ -53,8 +51,13 @@ int main(void) {
     //Run this code forever, but put the CPU to sleep
     while(1)
     {
-        printf("%d\n", adc_get_vcc());
-        printf("%d\n", adc_get_temp());
+        printf("\nVCC: %u\n", adc_get_vcc());
+        printf("Temperature: %u\n", adc_get_temp());
+        
+        for(unsigned char i = 0; i < 4; i++)
+        { 
+            printf("Channel %u: %u\n", i, adc_sample(ADC_REF_AVCC, i));
+        }
         _delay_ms(1000);
     }
 }

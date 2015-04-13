@@ -26,10 +26,15 @@
 #ifndef __ADC_H_
 #define __ADC_H_
 
+//Defines for selecting the reference for the conversion
+#define ADC_REF_AREF    0b00000000 //AREF, internal V ref turned off
+#define ADC_REF_AVCC    0b01000000 //AVCC with external capacitor at AREF pin
+#define ADC_REF_11V     0b11000000 //Internal 1.1V voltage reference with external capacitor at AREF pin
+
 extern void adc_init(void);
-extern void adc_sample(void);
+extern unsigned int  adc_sample(unsigned char ref, unsigned char channel);
 
 extern unsigned int adc_get_vcc(void);
-extern long adc_get_temp(void);
+extern unsigned int adc_get_temp(void);
 
 #endif

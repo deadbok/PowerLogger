@@ -1,1 +1,2 @@
-Power logger using an MSP430G2553.
+Power logger using an atmega328p.
+.

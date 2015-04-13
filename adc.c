@@ -24,6 +24,8 @@
  */
 #include <avr/io.h>
 #include <util/delay.h>
+#include "adc.h"
+#include "config.h"
 
 /*
  * adc_init
@@ -32,36 +34,80 @@
  */
 void adc_init(void)
 {
+    //Set prescaler to 128 and enable ADC 
+    ADCSRA |= (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN);
 }
 
 /*
  * adc_sample
  *
  * Sample the ADC input.
+ * 
+ * Parameters
+ *  ref:
+ *   Reference voltage.
+ *    00000000, AREF, internal V ref turned off
+ *    01000000, AVCC with external capacitor at AREF pin
+ *    10000000, Reserved
+ *    11000000, Internal 1.1V voltage reference with external capacitor at AREF pin
+ *  channel:
+ *   The channel to sample from.
+ *   0b0000 = ADC0
+ *   0b0001 = ADC1
+ *   0b0010 = ADC2
+ *   0b0011 = ADC3
+ *   0b0100 = ADC4
+ *   0b0101 = ADC5
+ *   0b0110 = ADC6
+ *   0b0111 = ADC7
+ *   0b1000 = ADC8 (Internal temperature sensor)
+ *   0b1001 = (reserved)
+ *   0b1010 = (reserved)
+ *   0b1011 = (reserved)
+ *   0b1100 = (reserved)
+ *   0b1101 = (reserved)
+ *   0b1110 = 1.1V (V BG )
+ *   0b1111 = 0V (GND)
+ * Return:
+ *  The sampled value.
  */
-void adc_sample(void)
-{
+unsigned int adc_sample(unsigned char ref, unsigned char channel)
+{        
+    /* REFS = 11, internal 1.1V ref.
+     * ADLR = 0, right adjusted.
+     * Reserverd = 0.
+     * MUX = channel.
+     */
+     ADMUX = (0xF0 & (ref)) | (0x0F & channel);
+     
+     debug("ADMUX: 0x%X\n", ADMUX);
+     //Wait for the new values to sink in.
+     _delay_ms(1);
+     
+    //Start conversion
+    ADCSRA |= (1 << ADSC);
+    
+    //Wait until sampling is done
+    while(ADCSRA & (1 << ADSC))
+    {
+    }
+    
+    //Return result.
+    return(ADC);
 }
 
 //From: http://wp.josh.com/2014/11/06/battery-fuel-guage-with-zero-parts-and-zero-pins-on-avr/
 unsigned int adc_get_vcc(void)
 {
 	
-	// Select ADC inputs
-	// bit    76543210 
-	// REFS = 00       = Vcc used as Vref
-	// MUX  =   100001 = Single ended, 1.1V (Internal Ref) as Vin
-	
+	/* Select ADC inputs
+     * REFS = 01,  Vcc used as Vref.
+     * ADLR = 0, right adjusted.
+     * Reserverd = 0.
+     * MUX = 1110, 1.1V Internal Ref.
+     */
 	ADMUX = 0b01001110;
 	
-	/*
-	By default, the successive approximation circuitry requires an input clock frequency between 50
-	kHz and 200 kHz to get maximum resolution.
-	*/	
-				
-     //set prescaller to 128 and enable ADC 
-    ADCSRA |= (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN);
-
 	/*
 		After switching to internal voltage reference the ADC requires a settling time of 1ms before
 		measurements are stable. Conversions starting before this may not be reliable. The ADC must
@@ -94,44 +140,15 @@ unsigned int adc_get_vcc(void)
 				
 	unsigned int vccx10 = (1126400L / ADC); 
 	
-	/*	
-		Note that the ADC will not automatically be turned off when entering other sleep modes than Idle
-		mode and ADC Noise Reduction mode. The user is advised to write zero to ADEN before entering such
-		sleep modes to avoid excessive power consumption.
-	*/
-	
-	ADCSRA &= ~_BV( ADEN );			// Disable ADC to save power
-	
 	return(vccx10);
 }
 
-long adc_get_temp(void)
+unsigned int adc_get_temp(void)
 {
-    long    temp;
-    
-    //set prescaller to 128 and enable ADC 
-    ADCSRA |= (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN);
-    
-    /* REFS = 11, internal 1.1V ref.
-     * ADLR = 0, right adjusted.
-     * Reserverd = 0.
-     * MUX = 1000, ADC8 internal temperature.
-     */
-     ADMUX = 0b11001000;
-     
-     //Wait for the new values to sink in.
-     _delay_ms(2);
-     
-    //Start conversion
-    ADCSRA |= (1 << ADSC);
-    
-    //Wait until sampling is done
-    while(ADCSRA & (1 << ADSC))
-    {
-    }
-    
-    //Store result.
-    temp = ADC;
+    unsigned int    temp;    
+
+    //Sample the temperature sensor.
+    temp = adc_sample(ADC_REF_AVCC, MUX3);
     
     return(temp);
 }
