@@ -43,7 +43,7 @@ TARGET = powerlogger
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC =	main.c uart.c
+SRC =	main.c uart.c adc.c
     
 
 

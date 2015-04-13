@@ -1,6 +1,8 @@
 /*
  * uart.h
  *
+ * Functions for the UART (serial port)
+ * 
  * Copyright 2015 Martin bo Kristensen Grønholdt <oblivion@ace2>
  * 
  * This program is free software; you can redistribute it and/or modify

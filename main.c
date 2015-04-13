@@ -31,7 +31,9 @@
  * 
  */
 #include <stdio.h>
+#include <util/delay.h>
 #include "uart.h"
+#include "adc.h"
 
 //Variable to store integers as strings
 char	tmp_intstr[10];
@@ -41,17 +43,18 @@ char	tmp_intstr[10];
  */
 int main(void) {
     uart_init();
+    adc_init();
     
     //Set serial as standard I/O
     stdout = stdin = &uart_stdout;
 
 	printf("PowerLogger version 0.0.1 by deadbok.\r\n");
 
-
     //Run this code forever, but put the CPU to sleep
     while(1)
     {
-    	printf("test");
-    	printf("\r\n");
+        printf("%d\n", adc_get_vcc());
+        printf("%d\n", adc_get_temp());
+        _delay_ms(1000);
     }
 }

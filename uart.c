@@ -85,6 +85,6 @@ char uart_getc(FILE *stream)
     while (!(UCSR0A & (1 << RXC0)))
     {
     };
-    return UDR0;
+    return(UDR0);
 }
 
